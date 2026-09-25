@@ -1,0 +1,60 @@
+# Python virtual environments
+backend/venv/
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Frontend build
+frontend/dist/
+dist/
+build/
+
+# VS Code
+.vscode/
+
+# ML model files
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.keras
+*.onnx
+
+# Large datasets
+datasets/
+backend/data/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+# Firebase credentials
+backend/firebase_credentials.json

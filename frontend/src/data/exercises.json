@@ -1,0 +1,83 @@
+[
+  {
+    "id": "ex-1",
+    "title": "Post-Meal Brisk Walk",
+    "intensity": "Gentle",
+    "duration": "15 - 20 mins",
+    "timing": "Within 30 mins after meals",
+    "image": "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=800&q=80",
+    "glucoseImpact": "Activates large skeletal muscle GLUT4 glucose transporters without requiring extra insulin, effectively attenuating peak postprandial glucose surges.",
+    "clinicalNote": "A simple 15-minute walk after meals has been clinically proven to be more effective at moderating 24-hour glucose profiles than a single 45-minute morning walk.",
+    "steps": [
+      "Wait 15-20 minutes following your meal before stepping out.",
+      "Maintain a comfortable, steady pace where you can comfortably carry a conversation.",
+      "Keep shoulders relaxed and breathe deeply through your nose.",
+      "Stay hydrated with room-temperature water."
+    ]
+  },
+  {
+    "id": "ex-2",
+    "title": "Calm Restorative Vinyasa Yoga",
+    "intensity": "Low-Moderate",
+    "duration": "20 - 30 mins",
+    "timing": "Morning or early evening",
+    "image": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
+    "glucoseImpact": "Lowers cortisol and systemic adrenaline, which are counter-regulatory stress hormones that trigger hepatic glucose release.",
+    "clinicalNote": "Stress-reducing movement reduces insulin resistance caused by sympathetic nervous system activation, supporting smoother fasting readings.",
+    "steps": [
+      "Begin in Child's Pose (Balasana) with slow 4-count nasal breaths.",
+      "Transition through gentle Cat-Cow sequences to mobilize the spine.",
+      "Hold Warrior II and Triangle pose to engage quad and glute muscle groups.",
+      "End with 5 minutes of seated breathwork or Savasana."
+    ]
+  },
+  {
+    "id": "ex-3",
+    "title": "Bodyweight Resistance Circuit",
+    "intensity": "Moderate",
+    "duration": "20 mins",
+    "timing": "Mid-morning or afternoon",
+    "image": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80",
+    "glucoseImpact": "Increases muscle glycogen replenishment demand, sustaining increased insulin sensitivity for up to 24–48 hours post-workout.",
+    "clinicalNote": "Resistance exercises utilizing large muscle groups (legs, back, core) yield the greatest improvements in cellular glucose uptake.",
+    "steps": [
+      "Warm up with 3 minutes of arm circles and high-knee marches.",
+      "Perform 3 sets of 10-12 bodyweight squats or chair sits.",
+      "10 incline push-ups using a sturdy counter or wall.",
+      "30-second glute bridge holds with controlled breathing.",
+      "Cool down with full-body hamstring and chest stretches."
+    ]
+  },
+  {
+    "id": "ex-4",
+    "title": "Low-Impact Cycling",
+    "intensity": "Moderate",
+    "duration": "25 - 35 mins",
+    "timing": "Flexible, at least 1 hour post-snack",
+    "image": "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80",
+    "glucoseImpact": "Continuous aerobic effort improves vascular endothelial function and enhances capillary density around active muscle fibers.",
+    "clinicalNote": "Stationary or outdoor cycling provides steady, continuous aerobic expenditure without high-impact stress on feet and joints.",
+    "steps": [
+      "Ensure proper seat height so knees have a slight bend at the bottom of pedal rotation.",
+      "Pedal at an easy cadence (60-70 RPM) for a 5-minute warm-up.",
+      "Maintain a steady, moderate cadence for 20 minutes without sudden sprints.",
+      "Pedal lightly with low resistance for 5 minutes to gradually lower heart rate."
+    ]
+  },
+  {
+    "id": "ex-5",
+    "title": "Evening Mobility & Lymphatic Stretch",
+    "intensity": "Gentle",
+    "duration": "12 - 15 mins",
+    "timing": "1 hour before sleep",
+    "image": "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80",
+    "glucoseImpact": "Facilitates parasympathetic tone, reducing overnight dawn phenomenon spikes driven by late-night cortisol surges.",
+    "clinicalNote": "Gentle mobility prior to sleep improves peripheral blood circulation and sleep quality, a key pillar of glycemic stability.",
+    "steps": [
+      "Gentle seated spinal twists holding for 30 seconds per side.",
+      "Legs-Up-The-Wall (Viparita Karani) pose for 5 minutes to aid circulation.",
+      "Hamstring and calf stretches with deep diaphragmatic exhales.",
+      "Conclude with progressive muscle relaxation from toes to forehead."
+    ]
+  }
+]

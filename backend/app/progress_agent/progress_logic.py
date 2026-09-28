@@ -48,16 +48,20 @@ if __name__ == "__main__":
 from app.firebase_config import db
 import pandas as pd
 
-def get_progress_report_from_firebase():
-    # Fetch all glucose logs from Firestore
-    docs = db.collection("glucose_logs").order_by("logged_at").stream()
+def get_progress_report_from_firebase(user_email: str):
+    # Progress is calculated only from the signed-in user's glucose history.
+    docs = (
+        db.collection("glucose_logs")
+        .where("user_email", "==", user_email)
+        .stream()
+    )
 
     records = []
     for doc in docs:
         data = doc.to_dict()
         records.append({
             "logged_at": data.get("logged_at"),
-            "avg_glucose": data.get("predicted_glucose_30min")
+            "avg_glucose": data.get("input_glucose")
         })
 
     if len(records) < 2:

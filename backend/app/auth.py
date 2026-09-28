@@ -102,6 +102,7 @@ class RegisterRequest(BaseModel):
     email: str = Field(...)
     password: str = Field(..., min_length=6)
     diabetesType: str = Field(default="Type 1")
+    medicationType: Optional[str] = Field(default="Insulin")
     dob: str = Field(...)
 
 
@@ -113,6 +114,7 @@ class LoginRequest(BaseModel):
 class ProfileUpdateRequest(BaseModel):
     name: Optional[str] = None
     diabetesType: Optional[str] = None
+    medicationType: Optional[str] = None
     dob: Optional[str] = None
 
 
@@ -150,6 +152,7 @@ def register(data: RegisterRequest):
         "name": data.name.strip(),
         "password_hash": pw_hash,
         "diabetesType": data.diabetesType,
+        "medicationType": data.medicationType or "Insulin",
         "dob": data.dob,
         "created_at": now_iso,
         "updated_at": now_iso,
@@ -164,6 +167,7 @@ def register(data: RegisterRequest):
         "email": email_clean,
         "name": data.name.strip(),
         "diabetesType": data.diabetesType,
+        "medicationType": data.medicationType or "Insulin",
         "dob": data.dob,
     }
 
@@ -209,6 +213,7 @@ def login(data: LoginRequest):
         "email": email_clean,
         "name": user_data.get("name"),
         "diabetesType": user_data.get("diabetesType", "Type 1"),
+        "medicationType": user_data.get("medicationType", "Insulin"),
         "dob": user_data.get("dob", ""),
     }
 
@@ -227,6 +232,7 @@ def get_current_authenticated_user(current_user: dict = Depends(get_current_user
             "email": current_user.get("email"),
             "name": current_user.get("name"),
             "diabetesType": current_user.get("diabetesType", "Type 1"),
+            "medicationType": current_user.get("medicationType", "Insulin"),
             "dob": current_user.get("dob", ""),
         }
     }
@@ -245,6 +251,8 @@ def update_user_profile(
         update_fields["name"] = updates.name.strip()
     if updates.diabetesType is not None:
         update_fields["diabetesType"] = updates.diabetesType
+    if updates.medicationType is not None:
+        update_fields["medicationType"] = updates.medicationType
     if updates.dob is not None:
         update_fields["dob"] = updates.dob
 
@@ -256,6 +264,7 @@ def update_user_profile(
         "email": email,
         "name": refreshed.get("name"),
         "diabetesType": refreshed.get("diabetesType", "Type 1"),
+        "medicationType": refreshed.get("medicationType", "Insulin"),
         "dob": refreshed.get("dob", ""),
     }
 

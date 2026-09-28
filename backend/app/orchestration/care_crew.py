@@ -24,7 +24,12 @@ async def run_care_crew(meal_result: dict, last_dose_time: datetime, next_schedu
     medication_result = get_medication_awareness(
         last_dose_time=last_dose_time,
         next_scheduled_dose_time=next_scheduled_dose_time,
-        meal_carbs=meal_carbs
+        meal_carbs=meal_carbs,
+        meal_context={
+            "items": meal_result.get("items", []),
+            "gemini_confidence": meal_result.get("gemini_confidence"),
+            "timestamp": meal_result.get("timestamp"),
+        },
     )
 
     # CrewAI agent combines both results into one patient-friendly message

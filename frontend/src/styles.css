@@ -1,0 +1,299 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-panel: var(--panel);
+  --color-soft: var(--soft);
+  --color-success: var(--success);
+  --font-sans: "Manrope", sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+:root {
+  /* Moderately lighter, breathable purple-magenta healthcare palette */
+  --background: oklch(0.235 0.048 322);
+  --foreground: oklch(0.985 0.008 330);
+  --card: oklch(0.295 0.052 322);
+  --card-foreground: oklch(0.985 0.008 330);
+  --popover: oklch(0.295 0.052 322);
+  --popover-foreground: oklch(0.985 0.008 330);
+  --primary: oklch(0.66 0.235 358);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.355 0.058 325);
+  --secondary-foreground: oklch(0.985 0.008 330);
+  --muted: oklch(0.32 0.042 322);
+  --muted-foreground: oklch(0.80 0.024 320);
+  --accent: oklch(0.42 0.085 335);
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.64 0.21 24);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.52 0.065 325 / 42%);
+  --input: oklch(0.48 0.06 325 / 55%);
+  --ring: oklch(0.72 0.20 358);
+  --panel: oklch(0.285 0.050 322);
+  --soft: oklch(0.88 0.022 320);
+  --success: oklch(0.78 0.14 158);
+}
+
+@layer base {
+  * { 
+    box-sizing: border-box; 
+    border-color: var(--border); 
+  }
+  html { 
+    scroll-behavior: smooth; 
+  }
+  body { 
+    margin: 0; 
+    background-color: var(--background);
+    background-image: 
+      radial-gradient(ellipse 90% 65% at 50% -15%, oklch(0.36 0.11 328 / 45%), transparent),
+      radial-gradient(circle 650px at 95% 35%, oklch(0.32 0.09 352 / 30%), transparent),
+      radial-gradient(circle 550px at 5% 75%, oklch(0.30 0.08 310 / 25%), transparent);
+    background-attachment: fixed;
+    color: var(--foreground); 
+    font-family: var(--font-sans); 
+    overflow-x: hidden;
+  }
+  button, input, select { 
+    font: inherit; 
+  }
+  ::selection { 
+    background: var(--primary); 
+    color: var(--primary-foreground); 
+  }
+}
+
+@utility section-shell { 
+  width: min(100% - 48px, 1240px); 
+  margin-inline: auto; 
+}
+
+@utility panel { 
+  background: color-mix(in oklab, var(--panel) 94%, transparent); 
+  border: 1px solid var(--border); 
+  border-radius: 12px; 
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25), 0 0 15px -3px oklch(0.66 0.235 358 / 6%);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+@utility panel-interactive {
+  background: color-mix(in oklab, var(--panel) 94%, transparent); 
+  border: 1px solid var(--border); 
+  border-radius: 12px; 
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  &:hover {
+    border-color: oklch(0.66 0.235 358 / 60%);
+    box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.35), 0 0 25px -4px oklch(0.66 0.235 358 / 20%);
+    transform: translateY(-2px);
+  }
+}
+
+@utility hairline { 
+  border-color: var(--border); 
+}
+
+@utility eyebrow { 
+  color: var(--primary); 
+  text-transform: uppercase; 
+  font-size: 11px; 
+  font-weight: 800; 
+  letter-spacing: .16em; 
+}
+
+@utility field { 
+  background: var(--secondary); 
+  border: 1px solid var(--input); 
+  color: var(--foreground); 
+  border-radius: 8px; 
+  height: 44px; 
+  width: 100%; 
+  padding: 0 14px; 
+  outline: none; 
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  &:focus { 
+    border-color: var(--ring); 
+    box-shadow: 0 0 0 3px oklch(0.72 0.20 358 / 25%);
+  } 
+}
+
+@utility hero-surface { 
+  background: linear-gradient(90deg, var(--background) 1%, oklch(0.24 0.048 322 / 85%) 44%, oklch(0.24 0.048 322 / 20%) 100%); 
+}
+
+@utility gradient-panel { 
+  background: linear-gradient(135deg, color-mix(in oklab, var(--card) 95%, transparent), var(--background)); 
+}
+
+@utility brand-rule { 
+  background: linear-gradient(90deg, var(--primary), transparent); 
+}
+
+/* Floating particle & cell animations */
+@keyframes cell-float-1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  50% { transform: translate(35px, -25px) scale(1.08) rotate(15deg); }
+}
+
+@keyframes cell-float-2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  50% { transform: translate(-30px, 30px) scale(0.94) rotate(-12deg); }
+}
+
+@keyframes cell-float-3 {
+  0%, 100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  50% { transform: translate(25px, 20px) scale(1.05) rotate(8deg); }
+}
+
+@keyframes scan-laser {
+  0% { transform: translateY(-10%); opacity: 0; }
+  20% { opacity: 0.95; }
+  80% { opacity: 0.95; }
+  100% { transform: translateY(320px); opacity: 0; }
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.floating-cell-1 {
+  animation: cell-float-1 16s ease-in-out infinite;
+}
+
+.floating-cell-2 {
+  animation: cell-float-2 22s ease-in-out infinite;
+}
+
+.floating-cell-3 {
+  animation: cell-float-3 19s ease-in-out infinite;
+}
+
+.scanning-laser {
+  animation: scan-laser 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.pulse-glow {
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes intro { 0%,85% { opacity:1; visibility:visible } 100% { opacity:0; visibility:hidden } }
+@keyframes logo-rise { from { opacity:0; transform:scale(.94) } to { opacity:1; transform:scale(1) } }
+.splash { animation:intro 2.35s ease forwards; }
+.splash img { animation:logo-rise .8s ease both; filter:drop-shadow(0 0 22px color-mix(in oklab,var(--primary) 35%,transparent)); }
+
+@media (prefers-reduced-motion:reduce) { 
+  *, *::before, *::after { 
+    scroll-behavior:auto !important; 
+    animation-duration:.01ms !important; 
+    transition-duration:.01ms !important; 
+  } 
+  .splash { display:none; } 
+  .floating-cell-1, .floating-cell-2, .floating-cell-3, .scanning-laser { animation: none !important; }
+}
+
+@media (max-width:640px) { 
+  .section-shell { width:min(100% - 32px,1240px); } 
+}
+
+/* -------------------------------------------------------------
+ * Clinical Report Print Engine (Single-Page A4 / Letter)
+ * ------------------------------------------------------------- */
+@page {
+  size: A4 portrait;
+  margin: 10mm 12mm;
+}
+
+@media print {
+  html, body {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Suppress all app shell navigation, headers, footers and decor */
+  aside,
+  header,
+  nav,
+  footer,
+  .no-print,
+  [role="navigation"],
+  button:not(.print-keep),
+  .floating-particles,
+  .hero-surface,
+  .eyebrow {
+    display: none !important;
+  }
+
+  /* Reset outer layout paddings so document fills printable area */
+  main,
+  .section-shell,
+  div:has(> .clinical-report-sheet),
+  #root,
+  [data-router-root] {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  /* Document sheet styling */
+  .clinical-report-sheet {
+    box-shadow: none !important;
+    border: 1px solid #d4c8ee !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 16px 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 277mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    break-inside: avoid !important;
+  }
+}

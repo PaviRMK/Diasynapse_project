@@ -1,0 +1,4 @@
+- [ ] Build DiaSynapse visual system and cleaned brand assets.
+- [ ] Build landing and all requested navigable frontend screens.
+- [ ] Add honest input states and the configurable glucose forecast connection.
+- [ ] Verify desktop/mobile preview and navigation.

@@ -72,6 +72,8 @@ import {
   checkMedication,
   getProgressReport,
   getDashboardData,
+  getAuthHeader,
+  API_BASE_URL,
   runCareCheck,
   loginUser,
   registerUser,
@@ -350,6 +352,9 @@ function AppShell({ children, page }: { children: React.ReactNode; page: Page })
   const [medicationType, setMedicationType] = useState('Insulin');
 
   useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log('PROGRESS DEBUG: data loader executed');
+    }
     const profile = readJson<Record<string, string>>('profile');
     if (profile?.['name']) setUserName(profile['name']);
     if (profile?.['diabetesType']) setDiabetesType(profile['diabetesType']);
@@ -2266,7 +2271,6 @@ export function Insulin() {
 export function Progress() {
   const [range, setRange] = useState(7);
   const [report, setReport] = useState<any>(null);
-  const [latestMeal, setLatestMeal] = useState<MealAgentSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewTab, setViewTab] = useState<'trends' | 'report'>('trends');
   const [userName, setUserName] = useState('Pavi');
@@ -2278,20 +2282,55 @@ export function Progress() {
     if (profile?.['name']) setUserName(profile['name']);
     if (profile?.['diabetesType']) setDiabetesType(profile['diabetesType']);
     if (profile?.['medicationType']) setMedicationType(profile['medicationType']);
-    const cachedMeal = readLatestMealAnalysis();
-    if (cachedMeal) setLatestMeal(cachedMeal);
-
-    getProgressReport()
-      .then((data) => setReport(data))
-      .catch((err) => console.warn('Progress report fetch error:', err))
-      .finally(() => setLoading(false));
-    getDashboardData()
+    let cancelled = false;
+    setLoading(true);
+    setReport(null);
+    if (import.meta.env.DEV) {
+      console.log('[Progress debug] before API query', {
+        apiBaseUrl: API_BASE_URL,
+        rangeDays: range,
+        uid: profile?.['uid'] ?? null,
+        authTokenPresent: Object.keys(getAuthHeader()).length > 0,
+        endpoint: `${API_BASE_URL}/progress-report?range_days=${range}`,
+      });
+    }
+    getProgressReport(range)
       .then((data) => {
-        const latestMeal = saveLatestMealAnalysis(data?.meal);
-        if (latestMeal) setLatestMeal(latestMeal);
+        if (!cancelled) {
+          setReport(data);
+          if (import.meta.env.DEV) {
+            console.log('[Progress debug] after API query', {
+              status: 'success',
+              uid: profile?.['uid'] ?? null,
+              rangeDays: range,
+              glucoseRecordCount: data?.glucose_readings?.length ?? 0,
+              mealRecordCount: data?.meal_carbs?.length ?? 0,
+              glucoseRecords: data?.glucose_readings ?? [],
+              mealRecords: data?.meal_carbs ?? [],
+            });
+          }
+        }
       })
-      .catch((err) => console.warn('Latest meal fetch error:', err));
-  }, []);
+      .catch((err) => {
+        console.warn('Progress report fetch error:', err);
+        if (import.meta.env.DEV) {
+          console.log('[Progress debug] after API query', {
+            status: 'failed',
+            uid: profile?.['uid'] ?? null,
+            rangeDays: range,
+            apiBaseUrl: API_BASE_URL,
+            status: err?.status ?? null,
+            message: err?.message ?? String(err),
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [range]);
 
   // Build chart data strictly from backend — empty arrays if not available
   const glucoseChartData = useMemo(() => {
@@ -2299,7 +2338,7 @@ export function Progress() {
       return [];
     }
     return report.glucose_readings.map((r: any, i: number) => ({
-      time: r.label ?? `Reading ${i + 1}`,
+      time: r.label ?? (r.timestamp ? new Date(r.timestamp).toLocaleString() : `Reading ${i + 1}`),
       reading: typeof r.value === 'number' ? r.value : Number(r.value),
     }));
   }, [report]);
@@ -2309,13 +2348,27 @@ export function Progress() {
       return [];
     }
     return report.meal_carbs.map((m: any, i: number) => ({
-      meal: m.label ?? `Meal ${i + 1}`,
+      meal: m.label ?? (m.timestamp ? new Date(m.timestamp).toLocaleString() : `Meal ${i + 1}`),
       carbs: typeof m.carbs === 'number' ? m.carbs : Number(m.carbs),
     }));
   }, [report]);
 
-  const avgGlucose = report?.avg_glucose_period2 ? Math.round(report.avg_glucose_period2) : null;
+  const avgGlucose = report?.average_glucose != null ? Math.round(Number(report.average_glucose)) : null;
   const trend = report?.glucose_trend ?? null;
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !report) return;
+    console.debug('[Progress debug] rendered calculations', {
+      rangeDays: range,
+      loading,
+      filteredGlucoseRecordCount: glucoseChartData.length,
+      filteredMealRecordCount: carbChartData.length,
+      averageGlucose: report.average_glucose ?? null,
+      timeInRange: report.time_in_range ?? null,
+      activeSurveillanceRecords: report.total_records ?? 0,
+      trend: report.glucose_trend ?? null,
+    });
+  }, [report, range, loading, glucoseChartData.length, carbChartData.length]);
 
   return (
     <AppShell page="progress">
@@ -2374,7 +2427,6 @@ export function Progress() {
           medicationType={medicationType}
           reportData={report}
           latestForecast={read('latest_forecast') ? Number(read('latest_forecast')) : null}
-          lastMealCarbs={latestMeal ? String(latestMeal.total_estimated_carbs_g) : null}
           activeInsulin={null}
         />
       ) : (
@@ -2397,7 +2449,7 @@ export function Progress() {
             <div className="panel p-5">
               <p className="eyebrow">Time In Range</p>
               <div className="mt-2 flex items-baseline gap-2">
-                {report?.time_in_range !== undefined ? (
+                {report?.time_in_range != null ? (
                   <><span className="text-3xl font-extrabold text-emerald-400">{report.time_in_range}%</span>
                   <span className="text-xs text-muted-foreground">in 70-140 mg/dL</span></>
                 ) : (
@@ -2416,14 +2468,14 @@ export function Progress() {
                   <span className="text-3xl font-extrabold text-muted-foreground/50">—</span>
                 )}
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">Direction of glycemic stability</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Recorded-value direction; not a cause</p>
             </div>
 
             <div className="panel p-5">
               <p className="eyebrow">Active Surveillance</p>
               <div className="mt-2 flex items-baseline gap-2">
-                {report?.total_readings !== undefined ? (
-                  <><span className="text-3xl font-extrabold text-foreground">{report.total_readings}</span>
+                {report?.total_records !== undefined ? (
+                  <><span className="text-3xl font-extrabold text-foreground">{report.total_records}</span>
                   <span className="text-xs text-muted-foreground">records</span></>
                 ) : (
                   <span className="text-3xl font-extrabold text-muted-foreground/50">—</span>
@@ -2473,7 +2525,7 @@ export function Progress() {
                 <Empty
                   icon={Droplets}
                   title="Insufficient data"
-                  text={loading ? 'Loading telemetry...' : 'The backend does not yet provide per-reading glucose history. Use Glucose Forecast to record readings.'}
+                  text={loading ? 'Loading telemetry...' : 'No glucose records are available for this period.'}
                 />
               )}
             </div>
@@ -2503,7 +2555,7 @@ export function Progress() {
                 <Empty
                   icon={Utensils}
                   title="Insufficient data"
-                  text={loading ? 'Loading meal logs...' : 'The backend does not yet provide per-meal carbohydrate history. Use Meal Analysis to log meals.'}
+                  text={loading ? 'Loading meal logs...' : 'No meal records are available for this period.'}
                 />
               )}
             </div>

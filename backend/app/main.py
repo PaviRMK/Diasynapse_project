@@ -72,6 +72,7 @@ def home():
 @app.post("/predict-glucose")
 def predict_glucose(data: GlucoseInput, current_user: dict = Depends(get_current_user)):
     user_email = current_user["email"]
+    user_id = current_user.get("uid")
     existing_logs = [
         log.to_dict()
         for log in db.collection("glucose_logs").where("user_email", "==", user_email).stream()
@@ -114,11 +115,13 @@ def predict_glucose(data: GlucoseInput, current_user: dict = Depends(get_current
                 "history_sequence": sequence,
                 "record_type": "initial_history",
                 "user_email": user_email,
+                "user_id": user_id,
             })
         log_entry["history_sequence"] = 2
     else:
         log_entry["history_sequence"] = len(existing_logs)
     log_entry["logged_at"] = datetime.now().isoformat()
+    log_entry["user_id"] = user_id
     db.collection("glucose_logs").add(log_entry)
 
     return result
@@ -129,6 +132,7 @@ def log_glucose(data: GlucoseReading, current_user: dict = Depends(get_current_u
         "input_glucose": data.glucose,
         "logged_at": datetime.now().isoformat(),
         "user_email": current_user["email"],
+        "user_id": current_user.get("uid"),
     }
     db.collection("glucose_logs").add(log_entry)
     return log_entry
@@ -200,6 +204,7 @@ async def analyze_meal(file: UploadFile = File(...), current_user: dict = Depend
         "timestamp": meal_timestamp
     }
     meal_log["user_email"] = current_user["email"]
+    meal_log["user_id"] = current_user.get("uid")
     db.collection("meal_logs").add(meal_log)
 
     return {
@@ -237,8 +242,12 @@ def medication_awareness(data: MedicationInput, current_user: dict = Depends(get
 
     return result
 @app.get("/progress-report")
-def progress_report(current_user: dict = Depends(get_current_user)):
-    result = get_progress_report_from_firebase(current_user["email"])
+def progress_report(current_user: dict = Depends(get_current_user), range_days: int = 7):
+    result = get_progress_report_from_firebase(
+        user_email=current_user["email"],
+        user_id=current_user.get("uid"),
+        range_days=range_days,
+    )
     return result
 
 @app.get("/dashboard-data")
@@ -363,6 +372,7 @@ async def care_check(
     meal_log["label"] = "AI-Estimated"
     meal_log["timestamp"] = meal_timestamp
     meal_log["user_email"] = current_user["email"]
+    meal_log["user_id"] = current_user.get("uid")
     db.collection("meal_logs").add(meal_log)
 
     # Step 2: Run orchestration crew (Medication Agent + CrewAI summary)

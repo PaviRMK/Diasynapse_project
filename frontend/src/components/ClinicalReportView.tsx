@@ -19,18 +19,8 @@ interface ReportProps {
   medicationType: string;
   reportData: any;
   latestForecast: number | null;
-  lastMealCarbs: string | null;
   activeInsulin: number | null;
 }
-
-const readJson = <T,>(key: string): T | null => {
-  try {
-    const v = localStorage.getItem('diasynapse-' + key) || sessionStorage.getItem('diasynapse-' + key);
-    return v ? (JSON.parse(v) as T) : null;
-  } catch {
-    return null;
-  }
-};
 
 const readStr = (key: string): string | null => {
   try {
@@ -45,7 +35,6 @@ export function ClinicalReportView({
   diabetesType,
   medicationType = 'Insulin',
   reportData,
-  lastMealCarbs: propLastMealCarbs,
 }: ReportProps) {
   // 1. Core Patient & Report Identifiers
   const reportDate = useMemo(() => {
@@ -65,24 +54,30 @@ export function ClinicalReportView({
   }, [userName]);
 
   // 2. Verified Glucose Metrics from Backend Telemetry
-  const avgGlucose = reportData?.avg_glucose_period2 ? Math.round(reportData.avg_glucose_period2) : 138;
-  const timeInRange = reportData?.time_in_range ?? 74;
-  const totalReadings = reportData?.total_readings ?? 28;
-  const trend = reportData?.glucose_trend ?? 'Stable';
+  const avgGlucose = reportData?.average_glucose != null ? Math.round(reportData.average_glucose) : null;
+  const timeInRange = reportData?.time_in_range ?? null;
+  const totalReadings = reportData?.total_records ?? reportData?.total_readings ?? 0;
+  const trend = reportData?.glucose_trend ?? null;
 
-  // 3. Glucose Trend Data (only from actual period calculations)
-  const period1Avg = reportData?.avg_glucose_period1 ? Math.round(reportData.avg_glucose_period1) : null;
-  const period2Avg = reportData?.avg_glucose_period2 ? Math.round(reportData.avg_glucose_period2) : avgGlucose;
-  const glucoseDelta = reportData?.glucose_change !== undefined ? reportData.glucose_change : (period1Avg !== null ? Math.round(period2Avg - period1Avg) : null);
+  // 3. Glucose trend data (only from actual period calculations)
+  const period1Avg = reportData?.avg_glucose_period1 != null ? Math.round(reportData.avg_glucose_period1) : null;
+  const period2Avg = reportData?.avg_glucose_period2 != null ? Math.round(reportData.avg_glucose_period2) : null;
+  const glucoseDelta = reportData?.glucose_change ?? null;
 
-  // 4. Actual Documented Records from Local Storage
+  // 4. Actual documented records from this user's backend report
   const recentReading = useMemo(() => {
-    return readJson<{ value: string; time: string }>('reading');
-  }, []);
+    const readings = reportData?.glucose_readings;
+    if (!Array.isArray(readings) || readings.length === 0) return null;
+    const latest = readings[readings.length - 1];
+    return { value: latest.value, time: latest.timestamp };
+  }, [reportData]);
 
-  const loggedMealCarbs = useMemo(() => {
-    return propLastMealCarbs;
-  }, [propLastMealCarbs]);
+  const latestMealRecord = useMemo(() => {
+    const meals = reportData?.meal_carbs;
+    return Array.isArray(meals) && meals.length > 0 ? meals[meals.length - 1] : null;
+  }, [reportData]);
+
+  const loggedMealCarbs = latestMealRecord?.carbs != null ? String(latestMealRecord.carbs) : null;
 
   const loggedLastDose = useMemo(() => {
     return readStr('last_dose_time');
@@ -205,7 +200,7 @@ export function ClinicalReportView({
             <div className="rounded-md border border-[#e6ddfa] bg-[#fdfcff] p-2.5">
               <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mean Glucose</span>
               <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-xl font-extrabold text-slate-950 tracking-tight">{avgGlucose}</span>
+                <span className="text-xl font-extrabold text-slate-950 tracking-tight">{avgGlucose ?? '—'}</span>
                 <span className="text-[11px] text-slate-500 font-medium">mg/dL</span>
               </div>
               <p className="text-[10px] text-slate-500 mt-0.5">Reference: &lt; 140 mg/dL</p>
@@ -215,7 +210,7 @@ export function ClinicalReportView({
             <div className="rounded-md border border-[#d6f0df] bg-[#f7fdf9] p-2.5">
               <span className="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Time In Range (TIR)</span>
               <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-xl font-extrabold text-emerald-700 tracking-tight">{timeInRange}%</span>
+                <span className="text-xl font-extrabold text-emerald-700 tracking-tight">{timeInRange != null ? `${timeInRange}%` : '—'}</span>
                 <span className="text-[10px] text-emerald-600 font-medium">70–140 mg/dL</span>
               </div>
               <p className="text-[10px] text-emerald-600 mt-0.5">Target: &ge; 70% in range</p>
@@ -236,9 +231,9 @@ export function ClinicalReportView({
               <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Trajectory</span>
               <div className="mt-1">
                 <span className={`text-base font-extrabold capitalize ${
-                  trend === 'Improving' ? 'text-emerald-700' : trend === 'Worsening' ? 'text-rose-700' : 'text-[#7e22ce]'
+                  trend === 'Downward' ? 'text-emerald-700' : trend === 'Upward' ? 'text-rose-700' : 'text-[#7e22ce]'
                 }`}>
-                  {trend}
+                  {trend ?? 'Insufficient data'}
                 </span>
               </div>
               <p className="text-[10px] text-slate-500 mt-0.5">Calculated trend status</p>
@@ -258,13 +253,13 @@ export function ClinicalReportView({
               <div>
                 <span className="text-slate-500 text-[10px] font-bold uppercase block">Baseline Period Mean</span>
                 <span className="font-bold text-slate-900 mt-0.5 block">
-                  {period1Avg !== null ? `${period1Avg} mg/dL` : '142 mg/dL (Period 1)'}
+                  {period1Avg !== null ? `${period1Avg} mg/dL` : 'Insufficient data'}
                 </span>
               </div>
               <div>
                 <span className="text-slate-500 text-[10px] font-bold uppercase block">Recent Period Mean</span>
                 <span className="font-bold text-slate-900 mt-0.5 block">
-                  {period2Avg} mg/dL (Period 2)
+                  {period2Avg !== null ? `${period2Avg} mg/dL` : 'Insufficient data'}
                 </span>
               </div>
               <div>
@@ -272,7 +267,7 @@ export function ClinicalReportView({
                 <span className={`font-bold mt-0.5 block ${
                   glucoseDelta !== null && glucoseDelta < 0 ? 'text-emerald-700' : glucoseDelta !== null && glucoseDelta > 0 ? 'text-rose-700' : 'text-slate-800'
                 }`}>
-                  {glucoseDelta !== null ? `${glucoseDelta > 0 ? '+' : ''}${glucoseDelta} mg/dL` : '-4.0 mg/dL'}
+                  {glucoseDelta !== null ? `${glucoseDelta > 0 ? '+' : ''}${glucoseDelta} mg/dL` : 'Insufficient data'}
                 </span>
               </div>
             </div>
@@ -280,9 +275,10 @@ export function ClinicalReportView({
             <div className="pt-2 text-[11px] text-slate-600 flex items-center justify-between">
               <span>
                 <strong>Clinical Trajectory Assessment: </strong>
-                {trend === 'Improving' && 'Demonstrates a downward glycemic shift toward physiological target.'}
-                {trend === 'Stable' && 'Demonstrates consistent period-to-period glycemic stability within tolerance boundaries.'}
-                {trend === 'Worsening' && 'Reflects an upward trajectory requiring clinical review.'}
+                {trend === 'Downward' && 'Recorded glucose values moved downward over the selected period.'}
+                {trend === 'Stable' && 'Recorded glucose values showed little period-to-period change.'}
+                {trend === 'Upward' && 'Recorded glucose values moved upward over the selected period.'}
+                {!trend && 'Insufficient glucose history to determine direction.'}
               </span>
               <span className="text-[10px] text-slate-500 font-medium">Computed across {totalReadings} sequential recordings</span>
             </div>
@@ -311,14 +307,15 @@ export function ClinicalReportView({
                 <tr className="hover:bg-slate-50/50">
                   <td className="py-2 px-3 font-semibold text-slate-900">Latest Recorded Glucose</td>
                   <td className="py-2 px-3 font-bold text-slate-950">
-                    {recentReading?.value ? `${recentReading.value} mg/dL` : `${avgGlucose} mg/dL`}
+                    {recentReading?.value != null ? `${recentReading.value} mg/dL` : 'No glucose data'}
                   </td>
                   <td className="py-2 px-3 text-slate-600">
-                    {formatTime(recentReading?.time) || 'Current Surveillance'}
+                    {formatTime(recentReading?.time) || 'No timestamp'}
                   </td>
                   <td className="py-2 px-3">
                     {(() => {
-                      const val = Number(recentReading?.value || avgGlucose);
+                      if (recentReading?.value == null) return <span className="text-slate-500">No recorded data</span>;
+                      const val = Number(recentReading.value);
                       if (val < 70) {
                         return <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">Hypoglycemia Alert (&lt; 70)</span>;
                       }
@@ -337,7 +334,7 @@ export function ClinicalReportView({
                     {loggedMealCarbs != null ? `${loggedMealCarbs} g carbs` : 'No meal data'}
                   </td>
                   <td className="py-2 px-3 text-slate-600">
-                    Documented in session
+                    {formatTime(latestMealRecord?.timestamp) || 'No meal timestamp'}
                   </td>
                   <td className="py-2 px-3 text-slate-600">
                     Postprandial nutritional telemetry

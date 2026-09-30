@@ -28,7 +28,7 @@ declare module '@/services/api.js' {
     dose_units?: number;
     meal_context?: MealAgentContext | null;
   }): Promise<any>;
-  export function getProgressReport(): Promise<any>;
+  export function getProgressReport(rangeDays?: number): Promise<any>;
   export function getDashboardData(): Promise<any>;
   export function runCareCheck(
     lastDoseTime: string,

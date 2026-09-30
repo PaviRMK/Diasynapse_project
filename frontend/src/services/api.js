@@ -122,8 +122,10 @@ export async function checkMedication(payload) {
 /**
  * Fetch progress report and Firebase logs
  */
-export async function getProgressReport() {
-  const res = await fetch(`${API_BASE_URL}/progress-report`, {
+export async function getProgressReport(rangeDays = 7) {
+  const url = new URL(`${API_BASE_URL}/progress-report`);
+  url.searchParams.set('range_days', String(rangeDays));
+  const res = await fetch(url.toString(), {
     headers: { ...getAuthHeader() },
   });
   return handleResponse(res);
